@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="MRC_DELETE_CHEAPEST" category="MakeRoomClassic">
+        MRC_DeleteCheapest()
+	</Binding>
+</Bindings>

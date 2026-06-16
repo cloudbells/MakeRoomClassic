@@ -84,6 +84,8 @@ local function InitSlash()
                     "/mrc minimap - shows or hides the minimap\n/mrc blacklist add [itemlink] - adds the given itemlink to the blacklist\n" ..
                     "/mrc blacklist remove [itemlink] - removes the given item from the blacklist\n/mrc blacklist all - lists all the blacklist items\n" ..
                     "/mrc blacklist purge - removes all items from the blacklist")
+        elseif text == "delete" then
+            ns:DeleteCheapest()
         elseif text == "minimap" then
             ToggleMinimapButton()
         elseif text:find("blacklist add") then
@@ -107,6 +109,11 @@ local function InitSlash()
             ToggleFrame()
         end
     end
+end
+
+-- Initializes keybinds.
+local function InitKeybinds()
+    BINDING_NAME_MRC_DELETE_CHEAPEST = "Delete Cheapest Item"
 end
 
 -- Registers for events.
@@ -140,6 +147,7 @@ function ns:OnAddonLoaded(addonName)
         LoadVariables()
         InitMinimapButton()
         InitSlash()
+        InitKeybinds()
         print("|cFFFFFF00MakeRoomClassic|r loaded! Type /mrc help for commands and controls.")
     end
 end

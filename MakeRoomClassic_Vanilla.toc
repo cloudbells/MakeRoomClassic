@@ -1,4 +1,4 @@
-## Interface: 11503
+## Interface: 11508
 ## Title: MakeRoomClassic
 ## Notes: Easily delete the cheapest items in your inventory
 ## Author: cloudbells

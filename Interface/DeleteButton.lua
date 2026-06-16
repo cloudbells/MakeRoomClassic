@@ -105,6 +105,21 @@ function ns:ScanBags()
     end
 end
 
+function ns:DeleteCheapest()
+    local bag, slot = buttons[1]:GetItemLocation()
+    local itemInfo = GetContainerItemInfo(bag, slot)
+    if itemInfo then
+        if MRCOptions and not MRCOptions.blacklist[itemInfo.itemID] then
+            C_Container.PickupContainerItem(bag, slot)
+            DeleteCursorItem()
+        end
+    end
+end
+
+function MRC_DeleteCheapest()
+    ns:DeleteCheapest()
+end
+
 -- Called when the button is clicked.
 local function DeleteButton_OnClick(self, button)
     if button == "RightButton" then
