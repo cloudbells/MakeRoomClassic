@@ -107,11 +107,13 @@ end
 
 function ns:DeleteCheapest()
     local bag, slot = buttons[1]:GetItemLocation()
-    local itemInfo = GetContainerItemInfo(bag, slot)
-    if itemInfo then
-        if MRCOptions and not MRCOptions.blacklist[itemInfo.itemID] then
-            C_Container.PickupContainerItem(bag, slot)
-            DeleteCursorItem()
+    if bag and slot then
+        local itemInfo = GetContainerItemInfo(bag, slot)
+        if itemInfo then
+            if MRCOptions and not MRCOptions.blacklist[itemInfo.itemID] then
+                C_Container.PickupContainerItem(bag, slot)
+                DeleteCursorItem()
+            end
         end
     end
 end
