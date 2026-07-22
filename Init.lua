@@ -85,7 +85,7 @@ local function InitSlash()
                     "/mrc blacklist remove [itemlink] - removes the given item from the blacklist\n/mrc blacklist all - lists all the blacklist items\n" ..
                     "/mrc blacklist purge - removes all items from the blacklist")
         elseif text == "delete" then
-            ns:DeleteCheapest()
+            ns:DeleteOrSellCheapest()
         elseif text == "minimap" then
             ToggleMinimapButton()
         elseif text:find("blacklist add") then
@@ -113,7 +113,7 @@ end
 
 -- Initializes keybinds.
 local function InitKeybinds()
-    BINDING_NAME_MRC_DELETE_CHEAPEST = "Delete Cheapest Item"
+    BINDING_NAME_MRC_DELETE_CHEAPEST = "Delete or Sell Cheapest Item"
 end
 
 -- Registers for events.

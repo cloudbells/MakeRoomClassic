@@ -105,12 +105,16 @@ function ns:ScanBags()
     end
 end
 
-function ns:DeleteCheapest()
+function ns:DeleteOrSellCheapest()
     local bag, slot = buttons[1]:GetItemLocation()
     if bag and slot then
         local itemInfo = GetContainerItemInfo(bag, slot)
         if itemInfo then
             if MRCOptions and not MRCOptions.blacklist[itemInfo.itemID] then
+                if isAtMerchant then
+                    return C_Container.UseContainerItem(bag, slot)
+                end
+
                 C_Container.PickupContainerItem(bag, slot)
                 DeleteCursorItem()
             end
@@ -118,8 +122,8 @@ function ns:DeleteCheapest()
     end
 end
 
-function MRC_DeleteCheapest()
-    ns:DeleteCheapest()
+function MRC_DeleteOrSellCheapest()
+    ns:DeleteOrSellCheapest()
 end
 
 -- Called when the button is clicked.

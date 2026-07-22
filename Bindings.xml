@@ -1,5 +1,5 @@
 <Bindings>
 	<Binding name="MRC_DELETE_CHEAPEST" category="MakeRoomClassic">
-        MRC_DeleteCheapest()
+        MRC_DeleteOrSellCheapest()
 	</Binding>
 </Bindings>
