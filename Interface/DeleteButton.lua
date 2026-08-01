@@ -22,6 +22,7 @@ end
 -- Scans the given bag for the cheapest item.
 function ns:ScanBags()
     items = {[1] = {value = 999999999}, [2] = {value = 999999999}, [3] = {value = 999999999}}
+    local itemCount = 0
     for i = 1, 3 do
         for bag = BACKPACK_CONTAINER, NUM_BAG_SLOTS do
             for slot = 1, GetContainerNumSlots(bag) do
@@ -32,6 +33,7 @@ function ns:ScanBags()
                     if MRCOptions and not MRCOptions.blacklist[itemID] then
                         local itemName, _, _, _, _, _, _, _, _, _, value = GetItemInfo(itemID)
                         if value and value > 0 then
+                            itemCount = itemCount + 1
                             value = value * count
                             if value < items[1].value then
                                 items[1] = {
@@ -103,6 +105,12 @@ function ns:ScanBags()
             buttons[i]:SetLink(nil)
         end
     end
+
+    if itemCount == 0 then
+        return ns.deleteButtonParent:Hide()
+    end
+
+    ns.deleteButtonParent:Show()
 end
 
 function ns:DeleteOrSellCheapest()
