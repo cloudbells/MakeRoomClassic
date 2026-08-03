@@ -106,11 +106,19 @@ function ns:ScanBags()
         end
     end
 
+    if not MRCOptions then
+        return
+    end
+
     if itemCount == 0 then
+        MRCOptions.isHidden = true
         return ns.deleteButtonParent:Hide()
     end
 
-    ns.deleteButtonParent:Show()
+    if not MRCOptions.userHidden then
+        MRCOptions.isHidden = false
+        ns.deleteButtonParent:Show()
+    end
 end
 
 function ns:DeleteOrSellCheapest()

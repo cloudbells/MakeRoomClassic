@@ -1,7 +1,7 @@
 local ADDON_NAME, ns = ...
 
 -- TODO:
-    -- add a scroll? add a frame to the right of the highlighted frame and have the highlighted frame be the second most cheap item among the current 4
+-- add a scroll? add a frame to the right of the highlighted frame and have the highlighted frame be the second most cheap item among the current 4
 
 -- Variables.
 local eventFrame
@@ -26,6 +26,7 @@ end
 -- Shows or hides the frame.
 local function ToggleFrame()
     MRCOptions.isHidden = not MRCOptions.isHidden
+    MRCOptions.userHidden = MRCOptions.isHidden
     if MRCOptions.isHidden then
         ns.deleteButtonParent:Hide()
         PlaySound(SOUNDKIT.IG_MAINMENU_CLOSE)
@@ -40,9 +41,18 @@ local function ToggleMinimapButton()
     MRCOptions.minimapTable.hide = not MRCOptions.minimapTable.hide
     if MRCOptions.minimapTable.hide then
         minimapButton:Hide("MakeRoomClassic")
-        print("|cFFFFFF00MakeRoomClassic|r: Minimap button hidden. Type /MRC minimap to show it again.")
+        print("|cFFFFFF00MakeRoomClassic|r: Minimap button hidden. Type /mrc minimap to show it again.")
     else
         minimapButton:Show("MakeRoomClassic")
+    end
+end
+
+local function ToggleLoginMessage()
+    MRCOptionsGlobal.disableLoginMessage = not MRCOptionsGlobal.disableLoginMessage
+    if MRCOptionsGlobal.disableLoginMessage then
+        print("|cFFFFFF00MakeRoomClassic:|r Login message disabled. Type /mrc loginmessage to show it again.")
+    else
+        print("|cFFFFFF00MakeRoomClassic:|r Login message enabled.")
     end
 end
 
@@ -76,18 +86,15 @@ end
 
 -- Initializes slash commands.
 local function InitSlash()
-    SLASH_MRC1 = "/MRC"
-    SLASH_MRC2 = "/MakeRoomClassic"
+    SLASH_MRC1 = "/mrc"
+    SLASH_MRC2 = "/makeroomclassic"
     function SlashCmdList.MRC(text)
-        if text == "help" then
-            print("|cFFFFFF00MakeRoomClassic|r help: \nRight click an item to add it to the blacklist.\nLeft click an item to delete it.\n" ..
-                    "/mrc minimap - shows or hides the minimap\n/mrc blacklist add [itemlink] - adds the given itemlink to the blacklist\n" ..
-                    "/mrc blacklist remove [itemlink] - removes the given item from the blacklist\n/mrc blacklist all - lists all the blacklist items\n" ..
-                    "/mrc blacklist purge - removes all items from the blacklist")
+        if text == "minimap" then
+            ToggleMinimapButton()
+        elseif text == "loginmessage" then
+            ToggleLoginMessage()
         elseif text == "delete" then
             ns:DeleteOrSellCheapest()
-        elseif text == "minimap" then
-            ToggleMinimapButton()
         elseif text:find("blacklist add") then
             ns:AddToBlacklist(ns:ParseIDFromLink(text:match("blacklist add (.+)")))
         elseif text:find("blacklist remove") then
@@ -105,6 +112,12 @@ local function InitSlash()
             MRCOptions.blacklist = {}
             ns:ScanBags()
             print("|cFFFFFF00MakeRoomClassic|r: removed all items from the blacklist")
+        elseif text == "help" then
+            print("|cFFFFFF00MakeRoomClassic|r help: \nRight click an item to add it to the blacklist.\nLeft click an item to delete it.\n" ..
+                      "/mrc minimap - shows or hides the minimap\n/mrc loginmessage - shows or hides the login message\n" ..
+                      "/mrc blacklist add [itemlink] - adds the given itemlink to the blacklist\n" ..
+                      "/mrc blacklist remove [itemlink] - removes the given item from the blacklist\n/mrc blacklist all - lists all the blacklist items\n" ..
+                      "/mrc blacklist purge - removes all items from the blacklist")
         else
             ToggleFrame()
         end
@@ -126,9 +139,12 @@ end
 -- Loads all saved variables.
 local function LoadVariables()
     MRCOptions = MRCOptions or {}
+    MRCOptionsGlobal = MRCOptionsGlobal or {}
     MRCOptions.isHidden = MRCOptions.isHidden or false
+    MRCOptions.userHidden = MRCOptions.userHidden or false
     MRCOptions.minimapTable = MRCOptions.minimapTable or {}
     MRCOptions.blacklist = MRCOptions.blacklist or {}
+    MRCOptionsGlobal.disableLoginMessage = MRCOptionsGlobal.disableLoginMessage or false
 end
 
 -- Called when most game data is available.
@@ -148,7 +164,9 @@ function ns:OnAddonLoaded(addonName)
         InitMinimapButton()
         InitSlash()
         InitKeybinds()
-        print("|cFFFFFF00MakeRoomClassic|r loaded! Type /mrc help for commands and controls.")
+        if not MRCOptionsGlobal.disableLoginMessage then
+            print("|cFFFFFF00MakeRoomClassic|r loaded! Type /mrc help for commands and controls.")
+        end
     end
 end
 
