@@ -9,6 +9,9 @@ local items = {}
 local clickedButton = 0
 local isAtMerchant = false
 
+local hButtonMargin = 12
+local vButtonMargin = 14
+
 -- Called when the player speaks with a merchant.
 function ns:OnMerchantShow()
     isAtMerchant = true
@@ -201,6 +204,29 @@ function ns:UpdateOpacity(isInCombat)
     end
 end
 
+-- Updates button grow direction.
+function ns:UpdateGrowDirection()
+    if not MRCOptions then
+        return
+    end
+
+    buttons[2]:ClearAllPoints()
+    buttons[3]:ClearAllPoints()
+    if MRCOptions.growDirection == ns.GROW_DIRECTION.Up then
+        buttons[2]:SetPoint("BOTTOM", buttons[1], "TOP", 0, vButtonMargin)
+        buttons[3]:SetPoint("BOTTOM", buttons[2], "TOP", 0, vButtonMargin)
+    elseif MRCOptions.growDirection == ns.GROW_DIRECTION.Down then
+        buttons[2]:SetPoint("TOP", buttons[1], "BOTTOM", 0, -vButtonMargin)
+        buttons[3]:SetPoint("TOP", buttons[2], "BOTTOM", 0, -vButtonMargin)
+    elseif MRCOptions.growDirection == ns.GROW_DIRECTION.Left then
+        buttons[2]:SetPoint("RIGHT", buttons[1], "LEFT", -hButtonMargin, 0)
+        buttons[3]:SetPoint("RIGHT", buttons[2], "LEFT", -hButtonMargin, 0)
+    elseif MRCOptions.growDirection == ns.GROW_DIRECTION.Right then
+        buttons[2]:SetPoint("LEFT", buttons[1], "RIGHT", hButtonMargin, 0)
+        buttons[3]:SetPoint("LEFT", buttons[2], "RIGHT", hButtonMargin, 0)
+    end
+end
+
 -- Creates the delete button.
 function ns:InitDeleteButton()
     -- Create the parent frame.
@@ -215,7 +241,7 @@ function ns:InitDeleteButton()
         buttons[i]:SetPoint("CENTER")
         buttons[i].priceFontString = buttons[i]:CreateFontString(nil, "OVERLAY", CUI:GetFontSmall():GetName())
         buttons[i].priceFontString:SetJustifyH("CENTER")
-        buttons[i].priceFontString:SetPoint("TOP", buttons[i], "BOTTOM", 0, -4)
+        buttons[i].priceFontString:SetPoint("TOP", buttons[i], "BOTTOM", 0, -2)
         buttons[i].countFontString = buttons[i]:CreateFontString(nil, "OVERLAY", CUI:GetFontSmall():GetName())
         buttons[i].countFontString:SetPoint("BOTTOMRIGHT")
         buttons[i].SetItemLocation = DeleteButton_SetItemLocation
@@ -234,8 +260,6 @@ function ns:InitDeleteButton()
         end
     end)
     buttons[1]:SetSize(40, 40)
-    buttons[2]:SetPoint("RIGHT", buttons[1], "LEFT", -12, 0)
-    buttons[3]:SetPoint("RIGHT", buttons[2], "LEFT", -12, 0)
     -- Init static popup.
     StaticPopupDialogs["MAKEROOMCLASSIC_CONFIRM_DELETE"] = {
         text = "Placeholder text",

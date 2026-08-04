@@ -6,6 +6,7 @@ local ADDON_NAME, ns = ...
 -- Variables.
 local eventFrame
 local minimapButton = LibStub("LibDBIcon-1.0")
+ns.GROW_DIRECTION = ns:Enum({"Up", "Down", "Left", "Right"})
 
 -- Adds the given item to the blacklist.
 function ns:AddToBlacklist(itemID)
@@ -69,13 +70,40 @@ local function SetOpacity(outOfCombatOpacity, inCombatOpacity)
 
     ns:UpdateOpacity(InCombatLockdown())
 
-    print("|cFFFFFF00MakeRoomClassic|r: Out-of-combat opacity set to " .. outOfCombatOpacity .. "%.")
-    print("|cFFFFFF00MakeRoomClassic|r: In-combat opacity set to " .. inCombatOpacity .. "%.")
+    print("|cFFFFFF00MakeRoomClassic|r: out-of-combat opacity set to " .. outOfCombatOpacity .. "%.")
+    print("|cFFFFFF00MakeRoomClassic|r: in-combat opacity set to " .. inCombatOpacity .. "%.")
 end
 
 -- Sets frame positional lock status.
 local function SetLocked(isLocked)
+    if isLocked then
+        print("|cFFFFFF00MakeRoomClassic|r: locked.")
+    else
+        print("|cFFFFFF00MakeRoomClassic|r: unlocked.")
+    end
     MRCOptions.isLocked = isLocked
+end
+
+-- Sets button grow direction.
+local function SetGrowDirection(growDirectionText)
+    -- text is already lower case
+    if growDirectionText == "up" then
+        MRCOptions.growDirection = ns.GROW_DIRECTION.Up
+        print("|cFFFFFF00MakeRoomClassic|r: set grow direction to 'up'.")
+    elseif growDirectionText == "down" then
+        MRCOptions.growDirection = ns.GROW_DIRECTION.Down
+        print("|cFFFFFF00MakeRoomClassic|r: set grow direction to 'down'.")
+    elseif growDirectionText == "left" then
+        MRCOptions.growDirection = ns.GROW_DIRECTION.Left
+        print("|cFFFFFF00MakeRoomClassic|r: set grow direction to 'left'.")
+    elseif growDirectionText == "right" then
+        MRCOptions.growDirection = ns.GROW_DIRECTION.Right
+        print("|cFFFFFF00MakeRoomClassic|r: set grow direction to 'right'.")
+    else
+        print("|cFFFFFF00MakeRoomClassic|r: couldn't set grow direction to " .. growDirectionText .. ".")
+    end
+
+    ns:UpdateGrowDirection()
 end
 
 -- Initializes the minimap button.
@@ -132,6 +160,8 @@ local function InitSlash()
             SetLocked(true)
         elseif text == "unlock" then
             SetLocked(false)
+        elseif text:find("growdirection") then
+            SetGrowDirection(text:match("growdirection (.*)"))
         elseif text == "delete" then
             ns:DeleteOrSellCheapest()
         elseif text:find("blacklist add") then
@@ -152,12 +182,20 @@ local function InitSlash()
             ns:ScanBags()
             print("|cFFFFFF00MakeRoomClassic|r: removed all items from the blacklist")
         elseif text == "help" then
-            print("|cFFFFFF00MakeRoomClassic|r help: \nRight click an item to add it to the blacklist.\nLeft click an item to delete it.\n" ..
-                      "/mrc minimap - shows or hides the minimap\n/mrc loginmessage - shows or hides the login message\n" ..
+            -- LuaFormatter off
+            print("|cFFFFFF00MakeRoomClassic|r help:\n" ..
+                      "Right click an item to add it to the blacklist.\n" ..
+                      "Left click an item to delete it.\n" ..
+                      "/mrc minimap - shows or hides the minimap\n" ..
+                      "/mrc loginmessage - shows or hides the login message\n" ..
                       "/mrc opacity outOfCombatOpacity inCombatOpacity - sets opacity, numbers must be between 0 and 100\n" ..
-                      "/mrc lock and /mrc unlock - locks/unlocks the frame's position\n/mrc blacklist add [itemlink] - adds the given itemlink to the blacklist\n" ..
-                      "/mrc blacklist remove [itemlink] - removes the given item from the blacklist\n/mrc blacklist all - lists all the blacklist items\n" ..
+                      "/mrc lock and /mrc unlock - locks/unlocks the frame's position\n" ..
+                      "/mrc growdirection up/down/left/right - sets grow direction of the buttons\n" ..
+                      "/mrc blacklist add [itemlink] - adds the given itemlink to the blacklist\n" ..
+                      "/mrc blacklist remove [itemlink] - removes the given item from the blacklist\n" ..
+                      "/mrc blacklist all - lists all the blacklist items\n" ..
                       "/mrc blacklist purge - removes all items from the blacklist")
+            -- LuaFormatter on
         else
             ToggleFrame()
         end
@@ -185,6 +223,7 @@ local function LoadVariables()
     MRCOptions.minimapTable = MRCOptions.minimapTable or {}
     MRCOptions.blacklist = MRCOptions.blacklist or {}
     MRCOptions.isLocked = MRCOptions.isLocked or false
+    MRCOptions.growDirection = MRCOptions.growDirection or ns.GROW_DIRECTION.Left
     MRCOptionsGlobal.disableLoginMessage = MRCOptionsGlobal.disableLoginMessage or false
     MRCOptionsGlobal.outOfCombatOpacity = MRCOptionsGlobal.outOfCombatOpacity or 100
     MRCOptionsGlobal.inCombatOpacity = MRCOptionsGlobal.inCombatOpacity or 100
@@ -194,6 +233,7 @@ end
 function ns:OnPlayerEnteringWorld()
     eventFrame:UnregisterEvent("PLAYER_ENTERING_WORLD")
     ns:UpdateOpacity(InCombatLockdown())
+    ns:UpdateGrowDirection()
     ns:ScanBags()
     if MRCOptions.isHidden then
         ns.deleteButtonParent:Hide()
