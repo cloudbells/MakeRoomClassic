@@ -22,6 +22,7 @@ function ns:RegisterAllEvents(_eventFrame)
         wowEvents = {
             ADDON_LOADED = ns.OnAddonLoaded,
             PLAYER_ENTERING_WORLD = ns.OnPlayerEnteringWorld,
+            PLAYER_IN_COMBAT_CHANGED = ns.OnPlayerInCombatChanged,
             BAG_UPDATE = ns.OnBagUpdate,
             MERCHANT_SHOW = ns.OnMerchantShow,
             MERCHANT_CLOSED = ns.OnMerchantClosed

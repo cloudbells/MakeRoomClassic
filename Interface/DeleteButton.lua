@@ -19,6 +19,11 @@ function ns.OnMerchantClosed()
     isAtMerchant = false
 end
 
+-- Called when the player enters or leaves combat.
+function ns:OnPlayerInCombatChanged(isInCombat)
+    ns:UpdateOpacity(isInCombat)
+end
+
 -- Scans the given bag for the cheapest item.
 function ns:ScanBags()
     items = {[1] = {value = 999999999}, [2] = {value = 999999999}, [3] = {value = 999999999}}
@@ -121,6 +126,7 @@ function ns:ScanBags()
     end
 end
 
+-- Deletes or sells cheapest item.
 function ns:DeleteOrSellCheapest()
     local bag, slot = buttons[1]:GetItemLocation()
     if bag and slot then
@@ -138,12 +144,16 @@ function ns:DeleteOrSellCheapest()
     end
 end
 
+-- Deletes or sells cheapest item.
 function MRC_DeleteOrSellCheapest()
     ns:DeleteOrSellCheapest()
 end
 
 -- Called when the button is clicked.
 local function DeleteButton_OnClick(self, button)
+    if not MRCOptions.isLocked then
+        return
+    end
     if button == "RightButton" then
         if not MRCOptions.blacklist[items[self.id].itemID] then
             ns:AddToBlacklist(items[self.id].itemID)
@@ -181,38 +191,51 @@ function ns:OnBagUpdate(bag)
     end
 end
 
+-- Updates the opacity of the buttons.
+function ns:UpdateOpacity(isInCombat)
+    local opacity = isInCombat and MRCOptionsGlobal.inCombatOpacity / 100 or MRCOptionsGlobal.outOfCombatOpacity / 100
+
+    ns.deleteButtonParent:SetAlpha(opacity)
+    for i = 1, 3 do
+        buttons[i]:SetAlpha(opacity)
+    end
+end
+
 -- Creates the delete button.
 function ns:InitDeleteButton()
     -- Create the parent frame.
     ns.deleteButtonParent = CreateFrame("Frame", "MakeRoomClassicFrame", UIParent)
-    CUI:ApplyTemplate(ns.deleteButtonParent, CUI.templates.BackgroundFrameTemplate)
-    CUI:ApplyTemplate(ns.deleteButtonParent, CUI.templates.BorderedFrameTemplate)
-    ns.deleteButtonParent:SetSize(50, 50)
+    ns.deleteButtonParent:SetSize(1, 1)
     ns.deleteButtonParent:SetPoint("CENTER")
-    ns.deleteButtonParent:SetMovable(true)
-    ns.deleteButtonParent:HookScript("OnMouseDown", function(self)
-        self:StartMoving()
-    end)
-    ns.deleteButtonParent:HookScript("OnMouseUp", function(self)
-        self:StopMovingOrSizing()
-    end)
     -- Create buttons.
     for i = 1, 3 do
         buttons[i] = CUI:CreateLinkButton(ns.deleteButtonParent, "MakeRoomClassicButton" .. i, nil, {DeleteButton_OnClick})
+        buttons[i]:SetSize(32, 32)
         buttons[i]:RegisterForClicks("LeftButtonUp", "RightButtonUp")
         buttons[i]:SetPoint("CENTER")
-        buttons[i].priceFontString = buttons[i]:CreateFontString(nil, "OVERLAY", CUI:GetFontNormal():GetName())
-        buttons[i].priceFontString:SetPoint("BOTTOM", 0, -25)
-        buttons[i].countFontString = buttons[i]:CreateFontString(nil, "OVERLAY", CUI:GetFontNormal():GetName())
+        buttons[i].priceFontString = buttons[i]:CreateFontString(nil, "OVERLAY", CUI:GetFontSmall():GetName())
+        buttons[i].priceFontString:SetJustifyH("CENTER")
+        buttons[i].priceFontString:SetPoint("TOP", buttons[i], "BOTTOM", 0, -4)
+        buttons[i].countFontString = buttons[i]:CreateFontString(nil, "OVERLAY", CUI:GetFontSmall():GetName())
         buttons[i].countFontString:SetPoint("BOTTOMRIGHT")
         buttons[i].SetItemLocation = DeleteButton_SetItemLocation
         buttons[i].GetItemLocation = DeleteButton_GetItemLocation
         buttons[i].id = i
     end
-    buttons[2]:SetPoint("RIGHT", ns.deleteButtonParent, "LEFT", -10, 0)
-    buttons[2].priceFontString:SetPoint("BOTTOM", 0, -17)
-    buttons[3]:SetPoint("RIGHT", buttons[2], "LEFT", -10, 0)
-    buttons[3].priceFontString:SetPoint("BOTTOM", 0, -17)
+    ns.deleteButtonParent:SetMovable(true)
+    buttons[1]:HookScript("OnMouseDown", function()
+        if not MRCOptions.isLocked then
+            ns.deleteButtonParent:StartMoving()
+        end
+    end)
+    buttons[1]:HookScript("OnMouseUp", function()
+        if not MRCOptions.isLocked then
+            ns.deleteButtonParent:StopMovingOrSizing()
+        end
+    end)
+    buttons[1]:SetSize(40, 40)
+    buttons[2]:SetPoint("RIGHT", buttons[1], "LEFT", -12, 0)
+    buttons[3]:SetPoint("RIGHT", buttons[2], "LEFT", -12, 0)
     -- Init static popup.
     StaticPopupDialogs["MAKEROOMCLASSIC_CONFIRM_DELETE"] = {
         text = "Placeholder text",
@@ -224,5 +247,4 @@ function ns:InitDeleteButton()
             DeleteCursorItem()
         end
     }
-    ns:ScanBags()
 end

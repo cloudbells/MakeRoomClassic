@@ -47,6 +47,7 @@ local function ToggleMinimapButton()
     end
 end
 
+-- Toggles login messages.
 local function ToggleLoginMessage()
     MRCOptionsGlobal.disableLoginMessage = not MRCOptionsGlobal.disableLoginMessage
     if MRCOptionsGlobal.disableLoginMessage then
@@ -54,6 +55,27 @@ local function ToggleLoginMessage()
     else
         print("|cFFFFFF00MakeRoomClassic:|r Login message enabled.")
     end
+end
+
+-- Sets the in-combat and out-of-combat opacity levels.
+local function SetOpacity(outOfCombatOpacity, inCombatOpacity)
+    if not outOfCombatOpacity or not inCombatOpacity then
+        print("|cFFFFFF00MakeRoomClassic|r: unable to set opacity as no opacity level was provided.")
+        return
+    end
+
+    MRCOptionsGlobal.outOfCombatOpacity = outOfCombatOpacity
+    MRCOptionsGlobal.inCombatOpacity = inCombatOpacity
+
+    ns:UpdateOpacity(InCombatLockdown())
+
+    print("|cFFFFFF00MakeRoomClassic|r: Out-of-combat opacity set to " .. outOfCombatOpacity .. "%.")
+    print("|cFFFFFF00MakeRoomClassic|r: In-combat opacity set to " .. inCombatOpacity .. "%.")
+end
+
+-- Sets frame positional lock status.
+local function SetLocked(isLocked)
+    MRCOptions.isLocked = isLocked
 end
 
 -- Initializes the minimap button.
@@ -93,6 +115,23 @@ local function InitSlash()
             ToggleMinimapButton()
         elseif text == "loginmessage" then
             ToggleLoginMessage()
+        elseif text:find("opacity") then
+            local outOfCombatOpacityText, inCombatOpacityText = text:match("opacity (%d+).* (%d+).*")
+            local outOfCombatOpacity = tonumber(outOfCombatOpacityText)
+            local inCombatOpacity = tonumber(inCombatOpacityText)
+            if not outOfCombatOpacity or not inCombatOpacity then
+                print("|cFFFFFF00MakeRoomClassic|r: opacity needs valid numbers")
+                return
+            end
+            if outOfCombatOpacity < 0 or outOfCombatOpacity > 100 or inCombatOpacity < 0 or inCombatOpacity > 100 then
+                print("|cFFFFFF00MakeRoomClassic|r: opacity cannot be lower than 0% or higher than 100%")
+                return
+            end
+            SetOpacity(outOfCombatOpacity, inCombatOpacity)
+        elseif text == "lock" then
+            SetLocked(true)
+        elseif text == "unlock" then
+            SetLocked(false)
         elseif text == "delete" then
             ns:DeleteOrSellCheapest()
         elseif text:find("blacklist add") then
@@ -115,7 +154,8 @@ local function InitSlash()
         elseif text == "help" then
             print("|cFFFFFF00MakeRoomClassic|r help: \nRight click an item to add it to the blacklist.\nLeft click an item to delete it.\n" ..
                       "/mrc minimap - shows or hides the minimap\n/mrc loginmessage - shows or hides the login message\n" ..
-                      "/mrc blacklist add [itemlink] - adds the given itemlink to the blacklist\n" ..
+                      "/mrc opacity outOfCombatOpacity inCombatOpacity - sets opacity, numbers must be between 0 and 100\n" ..
+                      "/mrc lock and /mrc unlock - locks/unlocks the frame's position\n/mrc blacklist add [itemlink] - adds the given itemlink to the blacklist\n" ..
                       "/mrc blacklist remove [itemlink] - removes the given item from the blacklist\n/mrc blacklist all - lists all the blacklist items\n" ..
                       "/mrc blacklist purge - removes all items from the blacklist")
         else
@@ -144,12 +184,16 @@ local function LoadVariables()
     MRCOptions.userHidden = MRCOptions.userHidden or false
     MRCOptions.minimapTable = MRCOptions.minimapTable or {}
     MRCOptions.blacklist = MRCOptions.blacklist or {}
+    MRCOptions.isLocked = MRCOptions.isLocked or false
     MRCOptionsGlobal.disableLoginMessage = MRCOptionsGlobal.disableLoginMessage or false
+    MRCOptionsGlobal.outOfCombatOpacity = MRCOptionsGlobal.outOfCombatOpacity or 100
+    MRCOptionsGlobal.inCombatOpacity = MRCOptionsGlobal.inCombatOpacity or 100
 end
 
 -- Called when most game data is available.
 function ns:OnPlayerEnteringWorld()
     eventFrame:UnregisterEvent("PLAYER_ENTERING_WORLD")
+    ns:UpdateOpacity(InCombatLockdown())
     ns:ScanBags()
     if MRCOptions.isHidden then
         ns.deleteButtonParent:Hide()
@@ -165,7 +209,7 @@ function ns:OnAddonLoaded(addonName)
         InitSlash()
         InitKeybinds()
         if not MRCOptionsGlobal.disableLoginMessage then
-            print("|cFFFFFF00MakeRoomClassic|r loaded! Type /mrc help for commands and controls.")
+            print("|cFFFFFF00MakeRoomClassic|r loaded! Type /mrc help for commands and controls. Remember to do /mrc lock so the addon works!")
         end
     end
 end
