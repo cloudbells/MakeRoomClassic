@@ -7,6 +7,7 @@ local ADDON_NAME, ns = ...
 local eventFrame
 local minimapButton = LibStub("LibDBIcon-1.0")
 ns.GROW_DIRECTION = ns:Enum({"Up", "Down", "Left", "Right"})
+local GetItemInfo = C_Item.GetItemInfo
 
 -- Adds the given item to the blacklist.
 function ns:AddToBlacklist(itemID)
@@ -182,20 +183,18 @@ local function InitSlash()
             ns:ScanBags()
             print("|cFFFFFF00MakeRoomClassic|r: removed all items from the blacklist")
         elseif text == "help" then
-            -- LuaFormatter off
-            print("|cFFFFFF00MakeRoomClassic|r help:\n" ..
-                      "Right click an item to add it to the blacklist.\n" ..
-                      "Left click an item to delete it.\n" ..
-                      "/mrc minimap - shows or hides the minimap\n" ..
-                      "/mrc loginmessage - shows or hides the login message\n" ..
-                      "/mrc opacity outOfCombatOpacity inCombatOpacity - sets opacity, numbers must be between 0 and 100\n" ..
-                      "/mrc lock and /mrc unlock - locks/unlocks the frame's position\n" ..
-                      "/mrc growdirection up/down/left/right - sets grow direction of the buttons\n" ..
-                      "/mrc blacklist add [itemlink] - adds the given itemlink to the blacklist\n" ..
-                      "/mrc blacklist remove [itemlink] - removes the given item from the blacklist\n" ..
-                      "/mrc blacklist all - lists all the blacklist items\n" ..
-                      "/mrc blacklist purge - removes all items from the blacklist")
-            -- LuaFormatter on
+            print("|cFFFFFF00MakeRoomClassic|r help:")
+            print("Right click an item to add it to the blacklist.")
+            print("Left click an item to delete it.")
+            print("/mrc minimap - shows or hides the minimap")
+            print("/mrc loginmessage - shows or hides the login message")
+            print("/mrc opacity outOfCombatOpacity inCombatOpacity - sets opacity, numbers must be between 0 and 100")
+            print("/mrc lock and /mrc unlock - locks/unlocks the frame's position")
+            print("/mrc growdirection up/down/left/right - sets grow direction of the buttons")
+            print("/mrc blacklist add [itemlink] - adds the given itemlink to the blacklist")
+            print("/mrc blacklist remove [itemlink] - removes the given item from the blacklist")
+            print("/mrc blacklist all - lists all the blacklist items")
+            print("/mrc blacklist purge - removes all items from the blacklist")
         else
             ToggleFrame()
         end
