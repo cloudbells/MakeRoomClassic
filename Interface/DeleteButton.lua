@@ -3,7 +3,6 @@ local _, ns = ...
 local CUI = LibStub("CloudUI-1.0")
 local GetContainerNumSlots = C_Container.GetContainerNumSlots
 local GetContainerItemInfo = C_Container.GetContainerItemInfo
-local GetItemInfo = C_Item.GetItemInfo
 local buttons = {}
 local items = {}
 local clickedButton = 0
@@ -11,6 +10,9 @@ local isAtMerchant = false
 
 local hButtonMargin = 12
 local vButtonMargin = 14
+
+local GetItemInfo = C_Item.GetItemInfo
+local GetCoinTextureString = C_CurrencyInfo.GetCoinTextureString
 
 -- Called when the player speaks with a merchant.
 function ns:OnMerchantShow()
