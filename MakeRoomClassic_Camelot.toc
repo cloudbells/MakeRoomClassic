@@ -1,0 +1,34 @@
+## Interface: 16001
+## Title: MakeRoomClassic
+## Notes: Easily delete the cheapest items in your inventory
+## Author: cloudbells
+## Version: @project-version@
+## Category: Inventory
+## Category-deDE: Inventar
+## Category-esES: Inventario
+## Category-esMX: Inventario
+## Category-frFR: Inventaire
+## Category-itIT: Inventario
+## Category-koKR: 소지품
+## Category-ptBR: Inventário
+## Category-ruRU: Инвентарь
+## Category-zhCN: 物品栏
+## Category-zhTW: 物品欄
+## IconTexture: Interface\Addons\MakeRoomClassic\Media\FrostPresence.tga
+## SavedVariables: MRCOptionsGlobal
+## SavedVariablesPerCharacter: MRCOptions
+## X-Curse-Project-ID: 838806
+## X-WoWI-ID: 26560
+
+# Libs.
+Libs\LibStub.lua
+Libs\CallbackHandler-1.0.lua
+Libs\LibDataBroker-1.1.lua
+Libs\LibDBIcon-1.0.lua
+Libs\CloudUI-1.0\CloudUI-1.0.xml
+
+# Core files.
+Util.lua
+Interface/DeleteButton.lua
+Events.lua
+Init.lua
