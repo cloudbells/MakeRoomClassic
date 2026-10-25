@@ -5,11 +5,12 @@ local GetContainerNumSlots = C_Container.GetContainerNumSlots
 local GetContainerItemInfo = C_Container.GetContainerItemInfo
 local buttons = {}
 local items = {}
-local clickedButton = 0
 local isAtMerchant = false
 
 local hButtonMargin = 12
 local vButtonMargin = 14
+local dragStartX
+local dragStartY
 
 local GetItemInfo = C_Item.GetItemInfo
 local GetCoinTextureString = C_CurrencyInfo.GetCoinTextureString
@@ -142,11 +143,21 @@ function ns:DeleteOrSellCheapest()
                     return C_Container.UseContainerItem(bag, slot)
                 end
 
+                ClearCursor()
                 C_Container.PickupContainerItem(bag, slot)
                 DeleteCursorItem()
             end
         end
     end
+end
+
+local function HasButtonMoved()
+    if not dragStartX or not dragStartY then
+        return false
+    end
+
+    local x, y = ns.deleteButtonParent:GetLeft(), ns.deleteButtonParent:GetTop()
+    return math.abs(x - dragStartX) > 1 or math.abs(y - dragStartY) > 1
 end
 
 -- Deletes or sells cheapest item.
@@ -157,6 +168,10 @@ end
 -- Called when the button is clicked.
 local function DeleteButton_OnClick(self, button)
     if not MRCOptions.isLocked then
+        if self.id == 1 and not HasButtonMoved() then
+            print("|cFFFFFF00MakeRoomClassic|r: Deleting not possible while frame is unlocked. Shift-left click the minimap button or type /mrc lock.")
+        end
+
         return
     end
     if button == "RightButton" then
@@ -166,14 +181,14 @@ local function DeleteButton_OnClick(self, button)
             ns:RemoveFromBlacklist(items[self.id].itemID)
         end
     elseif self:GetLink() then
-        clickedButton = self.id
+        local item = items[self.id]
         if isAtMerchant then
             C_Container.UseContainerItem(self.bag, self.slot)
         else
-            StaticPopupDialogs["MAKEROOMCLASSIC_CONFIRM_DELETE"].text = "Are you sure you want to delete " .. items[self.id].itemLink ..
-                                                                            (items[self.id].count > 1 and "x" .. items[self.id].count or "") .. " (" ..
+            StaticPopupDialogs["MAKEROOMCLASSIC_CONFIRM_DELETE"].text = "Are you sure you want to delete " .. item.itemLink ..
+                                                                            (item.count > 1 and "x" .. item.count or "") .. " (" ..
                                                                             GetCoinTextureString(items[self.id].value) .. ")?"
-            StaticPopup_Show("MAKEROOMCLASSIC_CONFIRM_DELETE")
+            StaticPopup_Show("MAKEROOMCLASSIC_CONFIRM_DELETE", nil, nil, {bag = self.bag, slot = self.slot, link = item.itemLink, count = item.count})
         end
     end
 end
@@ -253,6 +268,7 @@ function ns:InitDeleteButton()
     ns.deleteButtonParent:SetMovable(true)
     buttons[1]:HookScript("OnMouseDown", function()
         if not MRCOptions.isLocked then
+            dragStartX, dragStartY = ns.deleteButtonParent:GetLeft(), ns.deleteButtonParent:GetTop()
             ns.deleteButtonParent:StartMoving()
         end
     end)
@@ -268,8 +284,13 @@ function ns:InitDeleteButton()
         button1 = "Yes",
         button2 = "No",
         timeout = 0,
-        OnAccept = function()
-            C_Container.PickupContainerItem(buttons[clickedButton]:GetItemLocation())
+        OnAccept = function(_, item)
+            local info = GetContainerItemInfo(item.bag, item.slot)
+            if not info or info.hyperlink ~= item.link or info.stackCount ~= item.count then
+                return print("|cFFFFFF00MakeRoomClassic|r: not deleting since item moved or changed")
+            end
+            ClearCursor()
+            C_Container.PickupContainerItem(item.bag, item.slot)
             DeleteCursorItem()
         end
     }

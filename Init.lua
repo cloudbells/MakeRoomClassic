@@ -11,9 +11,13 @@ local GetItemInfo = C_Item.GetItemInfo
 
 -- Adds the given item to the blacklist.
 function ns:AddToBlacklist(itemID)
+    if not itemID then
+        return print("|cFFFFFF00MakeRoomClassic|r: failed to add nil itemID to blacklist")
+    end
+
     MRCOptions.blacklist[itemID] = true
     local _, itemLink = GetItemInfo(itemID)
-    print("|cFFFFFF00MakeRoomClassic|r: Added " .. itemLink .. " to the blacklist.")
+    print("|cFFFFFF00MakeRoomClassic|r: added " .. itemLink .. " to the blacklist.")
     ns:ScanBags()
 end
 
@@ -21,8 +25,14 @@ end
 function ns:RemoveFromBlacklist(itemID)
     MRCOptions.blacklist[itemID] = nil
     local _, itemLink = GetItemInfo(itemID)
-    print("|cFFFFFF00MakeRoomClassic|r: Removed " .. itemLink .. " from the blacklist.")
+    print("|cFFFFFF00MakeRoomClassic|r: removed " .. itemLink .. " from the blacklist.")
     ns:ScanBags()
+end
+
+function ns:PurgeBlacklist()
+    MRCOptions.blacklist = {}
+    ns:ScanBags()
+    print("|cFFFFFF00MakeRoomClassic|r: removed all items from the blacklist")
 end
 
 -- Shows or hides the frame.
@@ -43,7 +53,7 @@ local function ToggleMinimapButton()
     MRCOptions.minimapTable.hide = not MRCOptions.minimapTable.hide
     if MRCOptions.minimapTable.hide then
         minimapButton:Hide("MakeRoomClassic")
-        print("|cFFFFFF00MakeRoomClassic|r: Minimap button hidden. Type /mrc minimap to show it again.")
+        print("|cFFFFFF00MakeRoomClassic|r: minimap button hidden. Type /mrc minimap to show it again.")
     else
         minimapButton:Show("MakeRoomClassic")
     end
@@ -53,9 +63,9 @@ end
 local function ToggleLoginMessage()
     MRCOptionsGlobal.disableLoginMessage = not MRCOptionsGlobal.disableLoginMessage
     if MRCOptionsGlobal.disableLoginMessage then
-        print("|cFFFFFF00MakeRoomClassic:|r Login message disabled. Type /mrc loginmessage to show it again.")
+        print("|cFFFFFF00MakeRoomClassic|r: login message disabled. Type /mrc loginmessage to show it again.")
     else
-        print("|cFFFFFF00MakeRoomClassic:|r Login message enabled.")
+        print("|cFFFFFF00MakeRoomClassic|r: login message enabled.")
     end
 end
 
@@ -87,6 +97,10 @@ end
 
 -- Sets button grow direction.
 local function SetGrowDirection(growDirectionText)
+    if not growDirectionText then
+        return print("|cFFFFFF00MakeRoomClassic|r: usage: /mrc growdirection up/down/left/right.")
+    end
+
     -- text is already lower case
     if growDirectionText == "up" then
         MRCOptions.growDirection = ns.GROW_DIRECTION.Up
@@ -116,15 +130,24 @@ local function InitMinimapButton()
         icon = "Interface/Addons/MakeRoomClassic/Media/FrostPresence",
         OnClick = function(self, button)
             if button == "LeftButton" then
+                if IsShiftKeyDown() then
+                    return SetLocked(not MRCOptions.isLocked)
+                end
+
                 ToggleFrame()
             elseif button == "RightButton" then
+                if IsShiftKeyDown() then
+                    return ns:PurgeBlacklist()
+                end
+
                 ToggleMinimapButton()
             end
         end,
         OnEnter = function(self)
             GameTooltip:SetOwner(self, "ANCHOR_LEFT")
             GameTooltip:AddLine("|cFFFFFFFFMakeRoomClassic|r")
-            GameTooltip:AddLine("Click to toggle the main frame. Right click to hide this minimap button.") -- temp
+            GameTooltip:AddLine(
+                "Left click to toggle the main frame.\nShift-left click to lock/unlock the frame.\nRight click to hide this minimap button.\nShift-right click to clear the blacklist.")
             GameTooltip:Show()
         end,
         OnLeave = function(self)
@@ -140,6 +163,7 @@ local function InitSlash()
     SLASH_MRC1 = "/mrc"
     SLASH_MRC2 = "/makeroomclassic"
     function SlashCmdList.MRC(text)
+        text = text:lower()
         if text == "minimap" then
             ToggleMinimapButton()
         elseif text == "loginmessage" then
@@ -166,22 +190,24 @@ local function InitSlash()
         elseif text == "delete" then
             ns:DeleteOrSellCheapest()
         elseif text:find("blacklist add") then
-            ns:AddToBlacklist(ns:ParseIDFromLink(text:match("blacklist add (.+)")))
+            local itemLink = text:match("blacklist add (.+)")
+            if not itemLink then
+                return print("|cFFFFFF00MakeRoomClassic|r: no item provided")
+            end
+            ns:AddToBlacklist(ns:ParseIDFromLink())
         elseif text:find("blacklist remove") then
             ns:RemoveFromBlacklist(ns:ParseIDFromLink(text:match("blacklist remove (.+)")))
         elseif text == "blacklist all" then
-            local str = ""
+            local str = "\n"
             for itemID in pairs(MRCOptions.blacklist) do
                 local _, itemLink = GetItemInfo(itemID)
                 if itemLink then
-                    print("* " .. itemLink)
+                    str = str .. "* " .. itemLink .. "\n"
                 end
             end
             print("|cFFFFFF00MakeRoomClassic|r: all blacklist items:" .. str)
         elseif text == "blacklist purge" then
-            MRCOptions.blacklist = {}
-            ns:ScanBags()
-            print("|cFFFFFF00MakeRoomClassic|r: removed all items from the blacklist")
+            ns:PurgeBlacklist()
         elseif text == "help" then
             print("|cFFFFFF00MakeRoomClassic|r help:")
             print("Right click an item to add it to the blacklist.")
