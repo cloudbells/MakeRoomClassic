@@ -35,7 +35,7 @@ function ns:ScanBags()
     items = {[1] = {value = 999999999}, [2] = {value = 999999999}, [3] = {value = 999999999}}
     local itemCount = 0
     for i = 1, 3 do
-        for bag = BACKPACK_CONTAINER, NUM_BAG_SLOTS do
+        for bag = Enum.BagIndex.Backpack, Enum.BagIndex.ReagentBag do
             for slot = 1, GetContainerNumSlots(bag) do
                 local itemInfo = GetContainerItemInfo(bag, slot)
                 if itemInfo then
